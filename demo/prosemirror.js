@@ -2,6 +2,7 @@
 
 import * as Y from 'yjs'
 import { WebrtcProvider } from 'y-webrtc'
+import { WebsocketProvider }  from 'y-websocket'
 import { ySyncPlugin, yCursorPlugin, yUndoPlugin, undo, redo } from '../src/y-prosemirror.js'
 import { EditorState } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
@@ -11,7 +12,11 @@ import { keymap } from 'prosemirror-keymap'
 
 window.addEventListener('load', () => {
   const ydoc = new Y.Doc()
-  const provider = new WebrtcProvider('prosemirror-debug', ydoc)
+  // const provider = new WebrtcProvider('prosemirror-debug', ydoc)
+  const websocketProvider = new WebsocketProvider(
+    'ws://157.230.101.10:1234', 'count-demo', ydoc
+    // 'ws://localhost:1234', 'count-demo', ydoc
+  )
   const type = ydoc.getXmlFragment('prosemirror')
 
   const editor = document.createElement('div')
@@ -23,7 +28,7 @@ window.addEventListener('load', () => {
       schema,
       plugins: [
         ySyncPlugin(type),
-        yCursorPlugin(provider.awareness),
+        yCursorPlugin(websocketProvider.awareness),
         yUndoPlugin(),
         keymap({
           'Mod-z': undo,
@@ -37,15 +42,15 @@ window.addEventListener('load', () => {
 
   const connectBtn = /** @type {HTMLElement} */ (document.getElementById('y-connect-btn'))
   connectBtn.addEventListener('click', () => {
-    if (provider.shouldConnect) {
-      provider.disconnect()
+    if (websocketProvider.shouldConnect) {
+      websocketProvider.disconnect()
       connectBtn.textContent = 'Connect'
     } else {
-      provider.connect()
+      websocketProvider.connect()
       connectBtn.textContent = 'Disconnect'
     }
   })
 
   // @ts-ignore
-  window.example = { provider, ydoc, type, prosemirrorView }
+  window.example = { websocketProvider, ydoc, type, prosemirrorView }
 })
